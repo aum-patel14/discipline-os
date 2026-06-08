@@ -3,7 +3,7 @@ import { Stack, Slot, useRouter, useSegments } from 'expo-router';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useAuthStore } from '../stores/authStore';
 import { COLORS } from '../constants/Theme';
-import { View, ActivityIndicator } from 'react-native';
+import { View, ActivityIndicator, StyleSheet, Platform } from 'react-native';
 import { useFonts } from 'expo-font';
 import { usePushNotifications } from '../hooks/usePushNotifications';
 
@@ -56,18 +56,22 @@ function NavigationGuard() {
   }
 
   return (
-    <Stack
-      screenOptions={{
-        headerShown: false,
-        contentStyle: { backgroundColor: COLORS.background },
-      }}
-    >
-      <Stack.Screen name="(auth)" options={{ headerShown: false }} />
-      <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-      <Stack.Screen name="profile" options={{ presentation: 'card', headerShown: false }} />
-      <Stack.Screen name="settings" options={{ presentation: 'card', headerShown: false }} />
-      <Stack.Screen name="partner" options={{ presentation: 'card', headerShown: false }} />
-    </Stack>
+    <View style={styles.rootContainer}>
+      <View style={styles.appContainer}>
+        <Stack
+          screenOptions={{
+            headerShown: false,
+            contentStyle: { backgroundColor: COLORS.background },
+          }}
+        >
+          <Stack.Screen name="(auth)" options={{ headerShown: false }} />
+          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+          <Stack.Screen name="profile" options={{ presentation: 'card', headerShown: false }} />
+          <Stack.Screen name="settings" options={{ presentation: 'card', headerShown: false }} />
+          <Stack.Screen name="partner" options={{ presentation: 'card', headerShown: false }} />
+        </Stack>
+      </View>
+    </View>
   );
 }
 
@@ -78,3 +82,26 @@ export default function RootLayout() {
     </QueryClientProvider>
   );
 }
+
+const styles = StyleSheet.create({
+  rootContainer: {
+    flex: 1,
+    backgroundColor: '#000000', // Premium dark background on the sides of the laptop browser
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  appContainer: {
+    flex: 1,
+    width: '100%',
+    maxWidth: Platform.OS === 'web' ? 500 : '100%',
+    backgroundColor: COLORS.background,
+    ...Platform.select({
+      web: {
+        borderLeftWidth: 1,
+        borderRightWidth: 1,
+        borderColor: COLORS.border,
+        boxShadow: '0 0 20px rgba(0,0,0,0.8)',
+      },
+    }),
+  },
+});
