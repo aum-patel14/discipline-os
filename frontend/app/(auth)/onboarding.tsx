@@ -34,52 +34,40 @@ export default function OnboardingScreen() {
   const [isCreatingGuest, setIsCreatingGuest] = useState(false);
   const { signup, login } = useAuthStore();
 
-  const handleNext = async () => {
-    if (currentSlide < SLIDES.length - 1) {
-      setCurrentSlide(currentSlide + 1);
-    } else {
-      // Create guest account for instant free access
-      setIsCreatingGuest(true);
-      try {
-        const randId = Math.random().toString(36).substring(2, 10);
-        const guestEmail = `disciplineos.guest.${randId}@gmail.com`;
-        const guestPassword = `GuestPassword_${randId}`;
-        const guestUsername = `guest_${randId.substring(0, 5)}`;
-        const guestFullName = `Guest Recruit`;
+  const handleGuestLogin = async () => {
+    setIsCreatingGuest(true);
+    try {
+      const randId = Math.random().toString(36).substring(2, 10);
+      const guestEmail = `disciplineos.guest.${randId}@gmail.com`;
+      const guestPassword = `GuestPassword_${randId}`;
+      const guestUsername = `guest_${randId.substring(0, 5)}`;
+      const guestFullName = `Guest Recruit`;
 
-        // 1. Sign up guest in backend
-        await signup(guestEmail, guestPassword, guestUsername, guestFullName);
-        // 2. Log in guest
-        await login(guestEmail, guestPassword);
-        // 3. Go to dashboard
-        router.replace('/(tabs)');
-      } catch (error) {
-        console.error('Failed to create guest session:', error);
-        // Fallback: send them to login screen if background creation fails
-        router.replace('/(auth)/login');
-      } finally {
-        setIsCreatingGuest(false);
-      }
+      // 1. Sign up guest in backend
+      await signup(guestEmail, guestPassword, guestUsername, guestFullName);
+      // 2. Log in guest
+      await login(guestEmail, guestPassword);
+      // 3. Go to dashboard
+      router.replace('/(tabs)');
+    } catch (error) {
+      console.error('Failed to create guest session:', error);
+      // Fallback: send them to login screen if background creation fails
+      router.replace('/(auth)/login');
+    } finally {
+      setIsCreatingGuest(false);
     }
   };
 
-  const handleLoginRedirect = () => {
-    router.replace('/(auth)/login');
+  const handleNextSlide = () => {
+    if (currentSlide < SLIDES.length - 1) {
+      setCurrentSlide(currentSlide + 1);
+    }
   };
 
   const slide = SLIDES[currentSlide];
 
   return (
     <View style={styles.container}>
-      {/* Login Button in the Right Corner */}
-      <TouchableOpacity 
-        style={styles.loginCornerButton} 
-        onPress={handleLoginRedirect}
-        disabled={isCreatingGuest}
-      >
-        <Text style={styles.loginCornerText}>LOGIN</Text>
-      </TouchableOpacity>
-
       {/* Slide Content */}
       <Animated.View 
         key={currentSlide} 
@@ -97,8 +85,10 @@ export default function OnboardingScreen() {
         {/* Pagination Dots */}
         <View style={styles.dotsContainer}>
           {SLIDES.map((_, index) => (
-            <View
+            <TouchableOpacity
               key={index}
+              onPress={() => setCurrentSlide(index)}
+              disabled={isCreatingGuest}
               style={[
                 styles.dot,
                 currentSlide === index ? [styles.activeDot, { backgroundColor: slide.accent }] : styles.inactiveDot
@@ -110,18 +100,41 @@ export default function OnboardingScreen() {
         {/* Action Button */}
         <TouchableOpacity 
           style={[styles.button, { backgroundColor: slide.accent }]} 
-          onPress={handleNext}
+          onPress={handleGuestLogin}
           disabled={isCreatingGuest}
           activeOpacity={0.8}
         >
           {isCreatingGuest ? (
             <ActivityIndicator size="small" color="#000000" />
           ) : (
-            <Text style={styles.buttonText}>
-              {currentSlide === SLIDES.length - 1 ? 'GET STARTED' : 'NEXT'}
-            </Text>
+            <Text style={styles.buttonText}>ENTER AS GUEST</Text>
           )}
         </TouchableOpacity>
+
+        {/* Secondary Links Row */}
+        <View style={styles.secondaryLinksRow}>
+          {currentSlide < SLIDES.length - 1 ? (
+            <>
+              <TouchableOpacity onPress={handleNextSlide} disabled={isCreatingGuest}>
+                <Text style={styles.secondaryLinkText}>NEXT SLIDE</Text>
+              </TouchableOpacity>
+              <Text style={styles.separator}>|</Text>
+              <TouchableOpacity onPress={() => router.push('/(auth)/login')} disabled={isCreatingGuest}>
+                <Text style={styles.secondaryLinkText}>LOG IN</Text>
+              </TouchableOpacity>
+            </>
+          ) : (
+            <>
+              <TouchableOpacity onPress={() => router.push('/(auth)/login')} disabled={isCreatingGuest}>
+                <Text style={styles.secondaryLinkText}>LOG IN</Text>
+              </TouchableOpacity>
+              <Text style={styles.separator}>|</Text>
+              <TouchableOpacity onPress={() => router.push('/(auth)/signup')} disabled={isCreatingGuest}>
+                <Text style={styles.secondaryLinkText}>SIGN UP</Text>
+              </TouchableOpacity>
+            </>
+          )}
+        </View>
       </View>
     </View>
   );
@@ -134,22 +147,6 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingVertical: 60,
     paddingHorizontal: 24,
-  },
-  loginCornerButton: {
-    alignSelf: 'flex-end',
-    padding: 8,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-    borderRadius: 6,
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    backgroundColor: COLORS.card,
-  },
-  loginCornerText: {
-    ...TYPOGRAPHY.heading,
-    fontSize: 12,
-    color: COLORS.green,
-    letterSpacing: 1.5,
   },
   slideContainer: {
     flex: 1,
@@ -214,5 +211,22 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#000000',
     letterSpacing: 2,
+  },
+  secondaryLinksRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 20,
+  },
+  secondaryLinkText: {
+    ...TYPOGRAPHY.heading,
+    fontSize: 12,
+    color: COLORS.textSecondary,
+    letterSpacing: 1.5,
+    paddingHorizontal: 8,
+  },
+  separator: {
+    color: COLORS.border,
+    fontSize: 12,
   },
 });
