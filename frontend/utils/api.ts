@@ -12,8 +12,7 @@ const getBackendUrl = () => {
     }
     return 'http://localhost:3000';
   }
-  // Change to your production Railway URL when deployed
-  return 'https://discipline-os-production.up.railway.app';
+  return process.env.EXPO_PUBLIC_BACKEND_URL || 'https://discipline-os-production.up.railway.app';
 };
 
 export const BACKEND_URL = getBackendUrl();
