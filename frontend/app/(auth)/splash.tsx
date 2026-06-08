@@ -7,7 +7,7 @@ import { useAuthStore } from '../../stores/authStore';
 
 export default function SplashScreen() {
   const router = useRouter();
-  const checkSession = useAuthStore(state => state.checkSession);
+  const token = useAuthStore(state => state.token);
   
   const opacity = useSharedValue(0);
   const scale = useSharedValue(0.9);
@@ -20,9 +20,8 @@ export default function SplashScreen() {
     const init = async () => {
       // Small artificial delay to allow animation to show
       await new Promise(resolve => setTimeout(resolve, 1500));
-      const hasSession = await checkSession();
       
-      if (hasSession) {
+      if (token) {
         router.replace('/(tabs)');
       } else {
         router.replace('/(auth)/onboarding');
@@ -30,7 +29,7 @@ export default function SplashScreen() {
     };
 
     init();
-  }, []);
+  }, [token]);
 
   const animatedStyle = useAnimatedStyle(() => {
     return {

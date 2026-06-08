@@ -47,7 +47,7 @@ function NavigationGuard() {
     }
   }, [token, segments, isReady]);
 
-  if (!isReady || isLoading) {
+  if (!isReady) {
     return (
       <View style={{ flex: 1, backgroundColor: COLORS.background, justifyContent: 'center', alignItems: 'center' }}>
         <ActivityIndicator size="large" color={COLORS.green} />
