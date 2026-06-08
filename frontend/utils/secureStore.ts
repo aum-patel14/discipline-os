@@ -1,7 +1,9 @@
 import { Platform } from 'react-native';
-import * as SecureStore from 'expo-secure-store';
 
 const isWeb = Platform.OS === 'web';
+
+// Dynamically require expo-secure-store only on native platforms to prevent crashes on web
+const SecureStore = !isWeb ? require('expo-secure-store') : null;
 
 export const getItemAsync = async (key: string): Promise<string | null> => {
   try {

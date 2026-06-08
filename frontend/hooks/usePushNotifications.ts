@@ -5,19 +5,22 @@ import apiClient from '../utils/api';
 import { useAuthStore } from '../stores/authStore';
 
 // Configure how foreground notifications are handled
-Notifications.setNotificationHandler({
-  handleNotification: async () => ({
-    shouldShowAlert: true,
-    shouldPlaySound: true,
-    shouldSetBadge: false,
-  }),
-});
+if (Platform.OS !== 'web') {
+  Notifications.setNotificationHandler({
+    handleNotification: async () => ({
+      shouldShowAlert: true,
+      shouldPlaySound: true,
+      shouldSetBadge: false,
+    }),
+  });
+}
 
 export function usePushNotifications() {
   const token = useAuthStore(state => state.token);
   const responseListener = useRef<any>();
 
   useEffect(() => {
+    if (Platform.OS === 'web') return;
     if (!token) return;
 
     registerForPushNotificationsAsync()
