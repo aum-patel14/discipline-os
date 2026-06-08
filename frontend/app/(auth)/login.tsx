@@ -6,11 +6,32 @@ import { useAuthStore } from '../../stores/authStore';
 
 export default function LoginScreen() {
   const router = useRouter();
-  const { login, isLoading } = useAuthStore();
+  const { login, signup, isLoading } = useAuthStore();
   
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [isCreatingGuest, setIsCreatingGuest] = useState(false);
+
+  const handleGuestLogin = async () => {
+    setIsCreatingGuest(true);
+    setErrorMsg(null);
+    try {
+      const randId = Math.random().toString(36).substring(2, 10);
+      const guestEmail = `disciplineos.guest.${randId}@gmail.com`;
+      const guestPassword = `GuestPassword_${randId}`;
+      const guestUsername = `guest_${randId.substring(0, 5)}`;
+      const guestFullName = `Guest Recruit`;
+
+      await signup(guestEmail, guestPassword, guestUsername, guestFullName);
+      await login(guestEmail, guestPassword);
+      router.replace('/(tabs)');
+    } catch (err: any) {
+      setErrorMsg(err.message || 'Failed to create guest session.');
+    } finally {
+      setIsCreatingGuest(false);
+    }
+  };
 
   const handleLogin = async () => {
     if (!email || !password) {
@@ -91,13 +112,27 @@ export default function LoginScreen() {
           <TouchableOpacity 
             style={styles.loginButton} 
             onPress={handleLogin}
-            disabled={isLoading}
+            disabled={isLoading || isCreatingGuest}
             activeOpacity={0.8}
           >
             {isLoading ? (
               <ActivityIndicator size="small" color="#000" />
             ) : (
               <Text style={styles.loginButtonText}>LOCK IN</Text>
+            )}
+          </TouchableOpacity>
+
+          {/* Guest Login Button */}
+          <TouchableOpacity 
+            style={styles.guestButton} 
+            onPress={handleGuestLogin}
+            disabled={isLoading || isCreatingGuest}
+            activeOpacity={0.8}
+          >
+            {isCreatingGuest ? (
+              <ActivityIndicator size="small" color={COLORS.green} />
+            ) : (
+              <Text style={styles.guestButtonText}>ENTER AS GUEST</Text>
             )}
           </TouchableOpacity>
         </View>
@@ -272,5 +307,21 @@ const styles = StyleSheet.create({
     color: COLORS.green,
     fontSize: 14,
     letterSpacing: 1,
+  },
+  guestButton: {
+    backgroundColor: 'transparent',
+    borderWidth: 1,
+    borderColor: COLORS.green,
+    height: 56,
+    borderRadius: 8,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: 12,
+  },
+  guestButtonText: {
+    ...TYPOGRAPHY.heading,
+    color: COLORS.green,
+    fontSize: 16,
+    letterSpacing: 2,
   },
 });
